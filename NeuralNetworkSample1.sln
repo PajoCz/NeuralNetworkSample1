@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30413.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NeuralNetworkSample1", "NeuralNetworkSample1\NeuralNetworkSample1.csproj", "{D4D1F710-B2E4-4340-81BD-B8A2A48BB873}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NeuralNetworkSample2-Refactor", "NeuralNetworkSample2-Refactor\NeuralNetworkSample2-Refactor.csproj", "{528EB72B-8D5F-4D5B-B4A7-C702EA05AE8B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetworkSample3-Layers", "NeuralNetworkSample3-Layers\NeuralNetworkSample3-Layers.csproj", "{BAAD5712-EF29-4BD9-9DD1-2F3B396DA5CC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D4D1F710-B2E4-4340-81BD-B8A2A48BB873}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4D1F710-B2E4-4340-81BD-B8A2A48BB873}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4D1F710-B2E4-4340-81BD-B8A2A48BB873}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4D1F710-B2E4-4340-81BD-B8A2A48BB873}.Release|Any CPU.Build.0 = Release|Any CPU
+		{528EB72B-8D5F-4D5B-B4A7-C702EA05AE8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{528EB72B-8D5F-4D5B-B4A7-C702EA05AE8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{528EB72B-8D5F-4D5B-B4A7-C702EA05AE8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{528EB72B-8D5F-4D5B-B4A7-C702EA05AE8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAAD5712-EF29-4BD9-9DD1-2F3B396DA5CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAAD5712-EF29-4BD9-9DD1-2F3B396DA5CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAAD5712-EF29-4BD9-9DD1-2F3B396DA5CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAAD5712-EF29-4BD9-9DD1-2F3B396DA5CC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BBE5A87A-28CF-44E7-8C45-3E5607EF9B03}
+	EndGlobalSection
+EndGlobal
