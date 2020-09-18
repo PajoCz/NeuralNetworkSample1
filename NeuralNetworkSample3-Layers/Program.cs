@@ -10,14 +10,26 @@ namespace NeuralNetworkSample3_Layers
     {
         static void Main(string[] args)
         {
+            double calibWeight = -135;  //Weight [lb]
+            double calibHeight = -66;   //Height [in]
             List<List<double>> data = new List<List<double>>()
             {
-                new List<double> {-2, -1},
-                new List<double> {25, 6},
-                new List<double> {17, 4},
-                new List<double> {-15, -6},
+                //new List<double> {-2, -1},
+                //new List<double> {25, 6},
+                //new List<double> {17, 4},
+                //new List<double> {-15, -6},
+
+                new List<double> {133+calibWeight, 65+calibHeight},
+                new List<double> {160+calibWeight, 72+calibHeight},
+                new List<double> {152+calibWeight, 70+calibHeight},
+                new List<double> {120+calibWeight, 60+calibHeight},
+
+                //new List<double> {133, 65},
+                //new List<double> {160, 72},
+                //new List<double> {152, 70},
+                //new List<double> {120, 60},
             };
-            List<double> expectedOutputs = new List<double> {1, 0, 0, 1};
+            List<double> expectedOutputs = new List<double> {1, 0, 0, 1};   //Gender 1 female, 0 male
 
             NeuralLayer layerInputs = new NeuralLayer();
             layerInputs.Neurons.Add(new Neuron("i1", 0));
@@ -31,6 +43,7 @@ namespace NeuralNetworkSample3_Layers
             layero1.Neurons.Add(new Neuron("o1"));
             layerh1h2.AddNextLayer(layero1);
 
+            //var network = new NeuralNetworkEngine(layerInputs);
             var network = new NeuralNetworkEngine(layerh1h2);
 
             bool setMyInitValues = true;
@@ -41,8 +54,13 @@ namespace NeuralNetworkSample3_Layers
                 network.FindNeuronById("o1").InitValues(new List<double>() {-0.038516025100668934, 1.0484903515494195}, -1.1927510125913223);
             }
             
-            //var network = new NeuralNetworkEngine(layerInputs);
             network.Train(data, expectedOutputs);
+
+            var result = network.Calculate(new List<double> {-2, -1})[0];
+            result = network.Calculate(new List<double> {-20, -5})[0];
+            result = network.Calculate(new List<double> {10, 3})[0];
+            result = network.Calculate(new List<double> {0, 0})[0];
         }
     }
 }
+

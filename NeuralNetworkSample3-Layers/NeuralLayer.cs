@@ -9,6 +9,8 @@ namespace NeuralNetworkSample3_Layers
     {
         public List<Neuron> Neurons { get; set; } = new List<Neuron>();
         public NeuralLayer NextLayer { get; set; }
+        public NeuralLayer LastLayer => NextLayer == null ? this : NextLayer.LastLayer;
+
 
         /// <summary>
         /// Join all Neurons from one layer to all Neurons of other layer - by Synapse class (referenced by both neurons from to)

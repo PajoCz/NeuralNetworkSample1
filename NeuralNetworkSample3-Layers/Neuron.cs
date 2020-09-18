@@ -49,7 +49,7 @@ namespace NeuralNetworkSample3_Layers
             return LastCalculatedOutputSigmoid;
         }
 
-        public void BackPropagate(List<double> p_Data, double partialDerivates, double learn_rate = 2.5)
+        public void BackPropagate(List<double> p_Data, double partialDerivates, double learn_rate)
         {
             var inputs = SynapsesToPreviousLayer.Exists(i => i.From.SynapsesToPreviousLayer.Any())
                 ? SynapsesToPreviousLayer.Select(i => i.From.LastCalculatedOutputSigmoid).ToList()
@@ -64,7 +64,7 @@ namespace NeuralNetworkSample3_Layers
             {
                 var weightsMultiplyByDerivatesSigmoidLastOutput = WeightsMultiplyByDerivatesSigmoidLastOutput();
                 for (int i = 0; i < SynapsesToPreviousLayer.Count; i++)
-                    SynapsesToPreviousLayer[i].From.BackPropagate(p_Data, partialDerivates * weightsMultiplyByDerivatesSigmoidLastOutput[i]);
+                    SynapsesToPreviousLayer[i].From.BackPropagate(p_Data, partialDerivates * weightsMultiplyByDerivatesSigmoidLastOutput[i], learn_rate);
             }
         }
 
