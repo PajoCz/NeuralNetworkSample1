@@ -28,6 +28,12 @@ namespace NeuralNetworkSample3_Layers
             });
         }
 
+        public Neuron FindNeuronById(string p_Id)
+        {
+            var result = Neurons.Find(i => i.Id == p_Id);
+            return result ?? NextLayer?.FindNeuronById(p_Id);
+        }
+
         public void CalculateInputs(List<double> inputs)
         {
             Neurons.ForEach(n =>

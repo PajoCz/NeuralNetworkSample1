@@ -24,21 +24,23 @@ namespace NeuralNetworkSample3_Layers
             layerInputs.Neurons.Add(new Neuron("i2", 0));
 
             NeuralLayer layerh1h2 = new NeuralLayer();
-            layerh1h2.Neurons.Add(new Neuron("h1") { Bias = 0.9888773586480377});
-            layerh1h2.Neurons.Add(new Neuron("h2") { Bias = 0.32188634502570845});
+            layerh1h2.Neurons.Add(new Neuron("h1"));
+            layerh1h2.Neurons.Add(new Neuron("h2"));
             layerInputs.AddNextLayer(layerh1h2);
-            layerInputs.Neurons[0].SynapsesToNextLayer[0].Weight = 0.8815793758627867;
-            layerInputs.Neurons[0].SynapsesToNextLayer[1].Weight = -0.0037441705087075737;
-            layerInputs.Neurons[1].SynapsesToNextLayer[0].Weight = -0.5202642691344876;
-            layerInputs.Neurons[1].SynapsesToNextLayer[1].Weight = 0.2667151772486819;
-
             NeuralLayer layero1 = new NeuralLayer();
-            layero1.Neurons.Add(new Neuron("o1") { Bias = -1.1927510125913223});
+            layero1.Neurons.Add(new Neuron("o1"));
             layerh1h2.AddNextLayer(layero1);
-            layerh1h2.Neurons[0].SynapsesToNextLayer[0].Weight = -0.038516025100668934;
-            layerh1h2.Neurons[1].SynapsesToNextLayer[0].Weight = 1.0484903515494195;
-            
+
             var network = new NeuralNetworkEngine(layerh1h2);
+
+            bool setMyInitValues = true;
+            if (setMyInitValues)
+            {
+                network.FindNeuronById("h1").InitValues(new List<double>() {0.8815793758627867, -0.5202642691344876}, 0.9888773586480377);
+                network.FindNeuronById("h2").InitValues(new List<double>() {-0.0037441705087075737, 0.2667151772486819}, 0.32188634502570845);
+                network.FindNeuronById("o1").InitValues(new List<double>() {-0.038516025100668934, 1.0484903515494195}, -1.1927510125913223);
+            }
+            
             //var network = new NeuralNetworkEngine(layerInputs);
             network.Train(data, expectedOutputs);
         }

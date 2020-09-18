@@ -23,6 +23,16 @@ namespace NeuralNetworkSample3_Layers
             Bias = bias;
         }
 
+        public void InitValues(List<double> p_Weights, double p_Bias)
+        {
+            if (p_Weights.Count != SynapsesToPreviousLayer.Count)
+                throw new ArgumentOutOfRangeException(nameof(p_Weights));
+
+            for (int i = 0; i < p_Weights.Count; i++)
+                SynapsesToPreviousLayer[i].Weight = p_Weights[i];
+            Bias = p_Bias;
+        }
+
         public double Bias { get; set; }
         public double LastCalculatedOutput { get; set; }
         public double LastCalculatedOutputSigmoid { get; set; }

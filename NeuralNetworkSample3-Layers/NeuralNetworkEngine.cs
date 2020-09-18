@@ -12,6 +12,12 @@ namespace NeuralNetworkSample3_Layers
             _Layer = p_Layer;
         }
 
+        public Neuron FindNeuronById(string p_Id)
+        {
+            return _Layer.FindNeuronById(p_Id);
+
+        }
+
         public void Train(List<List<double>> data, List<double> expectedResults, int epochs = 1000)
         {
             for (int epoch = 0; epoch < epochs; epoch++)
