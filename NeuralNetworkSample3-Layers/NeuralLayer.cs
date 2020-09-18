@@ -36,13 +36,13 @@ namespace NeuralNetworkSample3_Layers
             return result ?? NextLayer?.FindNeuronById(p_Id);
         }
 
-        public void CalculateInputs(List<double> inputs)
+        public void CalculateInputs(List<double> p_Inputs)
         {
             Neurons.ForEach(n =>
             {
                 if (!n.SynapsesToPreviousLayer.Any())
                     n.SynapsesToPreviousLayer.Add(new Synapse(null, n, 1));
-                n.CalcBySigmoid(inputs);
+                n.CalcBySigmoid(p_Inputs);
             });
             NextLayer.CalculateByPreviousLayer();
         }

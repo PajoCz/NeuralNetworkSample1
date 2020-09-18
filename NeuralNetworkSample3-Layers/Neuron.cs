@@ -37,34 +37,34 @@ namespace NeuralNetworkSample3_Layers
         public double LastCalculatedOutput { get; set; }
         public double LastCalculatedOutputSigmoid { get; set; }
 
-        public virtual double CalcBySigmoid(List<double> inputs)
+        public virtual double CalcBySigmoid(List<double> p_Inputs)
         {
-            if (inputs.Count != SynapsesToPreviousLayer.Count)
-                throw new Exception($"Expected {SynapsesToPreviousLayer.Count}x inputs but input has {inputs.Count} numbers");
+            if (p_Inputs.Count != SynapsesToPreviousLayer.Count)
+                throw new Exception($"Expected {SynapsesToPreviousLayer.Count}x inputs but input has {p_Inputs.Count} numbers");
             LastCalculatedOutput = 0;
-            for (int i = 0; i < inputs.Count; i++)
-                LastCalculatedOutput += SynapsesToPreviousLayer[i].Weight * inputs[i];
+            for (int i = 0; i < p_Inputs.Count; i++)
+                LastCalculatedOutput += SynapsesToPreviousLayer[i].Weight * p_Inputs[i];
             LastCalculatedOutput += Bias;
             LastCalculatedOutputSigmoid = Sigmoid(LastCalculatedOutput);
             return LastCalculatedOutputSigmoid;
         }
 
-        public void BackPropagate(List<double> p_Data, double partialDerivates, double learn_rate)
+        public void BackPropagate(List<double> p_Data, double p_PartialDerivates, double p_LearnRate)
         {
             var inputs = SynapsesToPreviousLayer.Exists(i => i.From.SynapsesToPreviousLayer.Any())
                 ? SynapsesToPreviousLayer.Select(i => i.From.LastCalculatedOutputSigmoid).ToList()
                 : p_Data;
             var bias = DerivSigmoid(LastCalculatedOutput);
             for (int i = 0; i < inputs.Count; i++)
-                SynapsesToPreviousLayer[i].Weight -= learn_rate * partialDerivates * inputs[i] * bias;
+                SynapsesToPreviousLayer[i].Weight -= p_LearnRate * p_PartialDerivates * inputs[i] * bias;
 
-            Bias -= learn_rate * partialDerivates * bias;
+            Bias -= p_LearnRate * p_PartialDerivates * bias;
 
             if (SynapsesToPreviousLayer.Exists(i => i.From.SynapsesToPreviousLayer.Any()))
             {
                 var weightsMultiplyByDerivatesSigmoidLastOutput = WeightsMultiplyByDerivatesSigmoidLastOutput();
                 for (int i = 0; i < SynapsesToPreviousLayer.Count; i++)
-                    SynapsesToPreviousLayer[i].From.BackPropagate(p_Data, partialDerivates * weightsMultiplyByDerivatesSigmoidLastOutput[i], learn_rate);
+                    SynapsesToPreviousLayer[i].From.BackPropagate(p_Data, p_PartialDerivates * weightsMultiplyByDerivatesSigmoidLastOutput[i], p_LearnRate);
             }
         }
 
