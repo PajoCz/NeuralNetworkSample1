@@ -11,7 +11,7 @@ namespace NeuralNetworkSample3_Layers
         public Neuron(string id)
         {
             Id = id;
-            Bias = _Rnd.NextDouble();
+            Bias = (_Rnd.NextDouble()-0.5) * 2;
         }
 
         public List<Synapse> SynapsesToNextLayer { get; set; } = new List<Synapse>();

@@ -56,19 +56,20 @@ namespace NeuralNetworkSample3_Layers
             });
         }
 
-        public void WriteToConsole()
+        public void GetDebugInfo(StringBuilder sb)
         {
-            Console.WriteLine("NeuralLayer: ");
+            sb.Append($"NeuralLayer: {Environment.NewLine}");
             foreach (Neuron neuron in Neurons)
             {
-                Console.Write($"Neuron {neuron.Id} ");
+                sb.Append($"Neuron {neuron.Id} ");
                 foreach (var synapse in neuron.SynapsesToPreviousLayer)
                 {
-                    Console.Write($"input weight {synapse.Weight} ");
+                    sb.Append($"input weight {synapse.Weight} ");
                 } 
-                Console.WriteLine($"bias {neuron.Bias} ");
+                sb.Append($"bias {neuron.Bias}{Environment.NewLine}");
             }
-            NextLayer?.WriteToConsole();
+
+            NextLayer?.GetDebugInfo(sb);
         }
     }
 }

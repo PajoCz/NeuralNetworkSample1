@@ -10,7 +10,7 @@ namespace NeuralNetworkSample3_Layers
         {
             From = p_From;
             To = p_To;
-            Weight = p_Weight ?? new Random().NextDouble();
+            Weight = p_Weight ?? (new Random().NextDouble()-0.5) * 2;
         }
 
         public Neuron From { get; set; }
