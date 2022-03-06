@@ -44,7 +44,7 @@ namespace NeuralNetworkSample3_Layers
                     n.SynapsesToPreviousLayer.Add(new Synapse(null, n, 1));
                 n.CalcBySigmoid(p_Inputs);
             });
-            NextLayer.CalculateByPreviousLayer();
+            NextLayer?.CalculateByPreviousLayer();
         }
 
         private void CalculateByPreviousLayer()
@@ -64,9 +64,9 @@ namespace NeuralNetworkSample3_Layers
                 sb.Append($"Neuron {neuron.Id} ");
                 foreach (var synapse in neuron.SynapsesToPreviousLayer)
                 {
-                    sb.Append($"input weight {synapse.Weight} ");
+                    sb.Append($"input weight {synapse.Weight:f3} ");
                 } 
-                sb.Append($"bias {neuron.Bias}{Environment.NewLine}");
+                sb.Append($"bias {neuron.Bias:f3}{Environment.NewLine}");
             }
 
             NextLayer?.GetDebugInfo(sb);

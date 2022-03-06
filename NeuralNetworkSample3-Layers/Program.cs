@@ -7,75 +7,99 @@ using System.Text;
 
 namespace NeuralNetworkSample3_Layers
 {
-    //https://towardsdatascience.com/machine-learning-for-beginners-an-introduction-to-neural-networks-d49f22d238f9
-    //https://github.com/vzhou842/neural-network-from-scratch/blob/master/network.py
-    //https://gist.githubusercontent.com/vzhou842/986459249c2510da9b5c92bd3f3ca7fb/raw/3f99c7caaff534d09590842ef3c33a6a33effba8/fullnetwork.py
+    //https://towardsdatascience.com/machine-learning-for-beginners-an-introduction-to-neural-networks-d49f22d238f9 - documentation of this sample written in python
+    //https://github.com/vzhou842/neural-network-from-scratch/blob/master/network.py - python sample source code
+    //https://github.com/PajoCz/NeuralNetworkSample1 - my source code of this sample
+    //https://www.analyticsvidhya.com/blog/2021/04/is-gradient-descent-sufficient-for-neural-network/ - article info about "Forward propagation" and "Backward propagation" and "Learning rate". Why use Adam optimizer
     class Program
     {
-        //SETTINGS
+        //SETTINGS - neural network
+        static int neuronsInHiddenLayer = 2;    //0 means no hidden layer
+        //static int neuronsInSecondHiddenLayer = 2;    //0 means no hidden layer
+        const int epochs = 100;
+        const double learnRate = 2.5;
+        const double trainEndWithLossPercent = 0.8;
+
+        //setMyInitValues use only for start sample with 2 hidden neurons
         static bool setMyInitValues = false;    //set non random neurons biases and weights
+
+        //SETTINGS - logging progress
         static string logFolder = "D:\\NeuralNetworkProgress";
         static bool logStepsToImages = true;   //enable/disable log images to log folder
+        static int logStepsToImageWidth = 1024;
+        static int logStepsToImageHeight = 768;
         static bool logTextFile = true;   //enable/disable text log start/end neurons to log folder
 
-        //DATA
-        const int epochs = 100;
-
+        //TRAIN DATA
         const double calibWeight = -135;  //Weight [lb]
         const double calibHeight = -66;   //Height [in]
-        static List<List<double>> data = new List<List<double>>()
+        static List<List<double>> data = new()
         {
             //new List<double> {-2, -1},
             //new List<double> {25, 6},
             //new List<double> {17, 4},
             //new List<double> {-15, -6},
 
-            new List<double> {133+calibWeight, 65+calibHeight},
-            new List<double> {160+calibWeight, 72+calibHeight},
-            new List<double> {152+calibWeight, 70+calibHeight},
-            new List<double> {120+calibWeight, 60+calibHeight},
-
-            //new List<double> {133, 65},
-            //new List<double> {160, 72},
-            //new List<double> {152, 70},
-            //new List<double> {120, 60},
+            new() {133+calibWeight, 65+calibHeight},
+            new() {160+calibWeight, 72+calibHeight},
+            new() {152+calibWeight, 70+calibHeight},
+            new() {120+calibWeight, 60+calibHeight},
         };
-        static List<double> expectedOutputs = new List<double> {1, 0, 0, 1};   //Gender 1 female, 0 male
+        static List<double> expectedOutputs = new() {1, 0, 0, 1};   //Gender 1 female, 0 male
 
         static void Main(string[] args)
         {
-            NeuralLayer layerInputs = new NeuralLayer();
-            layerInputs.Neurons.Add(new Neuron("i1", 0));
-            layerInputs.Neurons.Add(new Neuron("i2", 0));
+            NeuralLayer layerInput = new NeuralLayer();
+            layerInput.Neurons.Add(new Neuron("i1", 0));
+            layerInput.Neurons.Add(new Neuron("i2", 0));
 
-            NeuralLayer layerh1h2 = new NeuralLayer();
-            layerh1h2.Neurons.Add(new Neuron("h1"));
-            layerh1h2.Neurons.Add(new Neuron("h2"));
-            //layerh1h2.Neurons.Add(new Neuron("h3"));
-            //layerh1h2.Neurons.Add(new Neuron("h4"));
-            layerInputs.AddNextLayer(layerh1h2);
-            NeuralLayer layero1 = new NeuralLayer();
-            layero1.Neurons.Add(new Neuron("o1"));
-            layerh1h2.AddNextLayer(layero1);
+            NeuralLayer layerOutput = new NeuralLayer();
+            layerOutput.Neurons.Add(new Neuron("o1"));
 
-            //var network = new NeuralNetworkEngine(layerInputs);
-            var network = new NeuralNetworkEngine(layerh1h2);
+            NeuralNetworkEngine neuralNetwork;
+            if (neuronsInHiddenLayer == 0)
+            {
+                layerInput.AddNextLayer(layerOutput);
+                neuralNetwork = new NeuralNetworkEngine(layerOutput);
+            }
+            else
+            {
+                NeuralLayer layerHidden = new NeuralLayer();
+                for(int i = 0; i < neuronsInHiddenLayer; i++)
+                    layerHidden.Neurons.Add(new Neuron($"h{i}"));
+                layerInput.AddNextLayer(layerHidden);
+                //if (neuronsInSecondHiddenLayer > 0)
+                //{
+                //    NeuralLayer layerSecondHidden = new NeuralLayer();
+                //    for(int i = 0; i < neuronsInSecondHiddenLayer; i++)
+                //        layerSecondHidden.Neurons.Add(new Neuron($"H{i}"));
+                //    layerHidden.AddNextLayer(layerSecondHidden);
+                //    layerSecondHidden.AddNextLayer(layerOutput);
+                //}
+                //else
+                {
+                    layerHidden.AddNextLayer(layerOutput);
+                }
+                neuralNetwork = new NeuralNetworkEngine(layerHidden);
+            }
 
             if (setMyInitValues)
             {
-                network.FindNeuronById("h1").InitValues(new List<double>() {0.8815793758627867, -0.5202642691344876}, 0.9888773586480377);
-                network.FindNeuronById("h2").InitValues(new List<double>() {-0.0037441705087075737, 0.2667151772486819}, 0.32188634502570845);
-                network.FindNeuronById("o1").InitValues(new List<double>() {-0.038516025100668934, 1.0484903515494195}, -1.1927510125913223);
+                //it works only for start sample with 2 hidden neurons
+                neuralNetwork.FindNeuronById("h1").InitValues(new List<double>() {0.8815793758627867, -0.5202642691344876}, 0.9888773586480377);
+                neuralNetwork.FindNeuronById("h2").InitValues(new List<double>() {-0.0037441705087075737, 0.2667151772486819}, 0.32188634502570845);
+                neuralNetwork.FindNeuronById("o1").InitValues(new List<double>() {-0.038516025100668934, 1.0484903515494195}, -1.1927510125913223);
             }
             
-            network.OnAfterTrainOneItem += NetworkOnOnAfterTrainOneItem;
+            neuralNetwork.OnAfterTrainOneItem += NetworkOnOnAfterTrainOneItem;
             
-            network.Train(data, expectedOutputs, epochs);
+            neuralNetwork.Train(data, expectedOutputs, epochs, learnRate, trainEndWithLossPercent);
 
-            //var result = network.Calculate(new List<double> {-2, -1})[0];
-            //result = network.Calculate(new List<double> {-20, -5})[0];
-            //result = network.Calculate(new List<double> {10, 3})[0];
-            //result = network.Calculate(new List<double> {0, 0})[0];
+            //PREDICT - check non trained data
+            var result = neuralNetwork.Calculate(new List<double> { -2, -1 })[0];
+            result = neuralNetwork.Calculate(new List<double> { -20, -5 })[0];
+            result = neuralNetwork.Calculate(new List<double> { 10, 3 })[0];
+            result = neuralNetwork.Calculate(new List<double> { 0, 0 })[0];
         }
 
         private static void NetworkOnOnAfterTrainOneItem(NeuralNetworkEngine.OnTrainProgressTime p_OnTrainProgressTime, NeuralLayer p_NeuralInputLayer, int p_Epoch, int p_DataIndex, List<double> p_Data, double p_ExpectedResult, double? p_PercentMissAll, double? p_PercentMiss)
@@ -87,7 +111,7 @@ namespace NeuralNetworkSample3_Layers
                 {
                     StringBuilder sb =
                         new StringBuilder(
-                            $"{Environment.NewLine}------{Environment.NewLine}{DateTime.Now} INIT. PercentMiss: {p_PercentMissAll}{Environment.NewLine}");
+                            $"{Environment.NewLine}------{Environment.NewLine}{DateTime.Now} INIT. PercentMissAll: {p_PercentMissAll:f3}%{Environment.NewLine}");
                     p_NeuralInputLayer.GetDebugInfo(sb);
                     File.AppendAllText($"{logFolder}\\_log.txt", sb.ToString());
                 }
@@ -96,7 +120,15 @@ namespace NeuralNetworkSample3_Layers
                     p_OnTrainProgressTime == NeuralNetworkEngine.OnTrainProgressTime.AfterBackPropagation)
                 {
                     StringBuilder sb =
-                        new StringBuilder($"{DateTime.Now} END. PercentMiss: {p_PercentMissAll}{Environment.NewLine}");
+                        new StringBuilder($"{DateTime.Now} END. PercentMissAll: {p_PercentMissAll:f3}%{Environment.NewLine}");
+                    p_NeuralInputLayer.GetDebugInfo(sb);
+                    File.AppendAllText($"{logFolder}\\_log.txt", sb.ToString());
+                }
+
+                if (p_PercentMissAll <= trainEndWithLossPercent)
+                {
+                    StringBuilder sb =
+                        new StringBuilder($"{DateTime.Now} TRAINED Epoch={p_Epoch} , DataIndex={p_DataIndex} {p_OnTrainProgressTime}. PercentMissAll: {p_PercentMissAll:f3}%{Environment.NewLine} <= trainEndWithLossPercent {trainEndWithLossPercent}%{Environment.NewLine}");
                     p_NeuralInputLayer.GetDebugInfo(sb);
                     File.AppendAllText($"{logFolder}\\_log.txt", sb.ToString());
                 }
@@ -105,7 +137,7 @@ namespace NeuralNetworkSample3_Layers
             if (logStepsToImages)
             {
                 var im = new NeuralNetworkToImage();
-                using Bitmap bmp = im.Draw(p_NeuralInputLayer, 1024, 768, p_Epoch, p_DataIndex, p_Data,
+                using Bitmap bmp = im.Draw(p_NeuralInputLayer, logStepsToImageWidth, logStepsToImageHeight, p_Epoch, p_DataIndex, p_Data,
                     p_ExpectedResult, p_PercentMissAll, p_PercentMiss, p_OnTrainProgressTime);
                 bmp.Save(
                     $"{logFolder}\\Epoch{p_Epoch}-DataIndex{p_DataIndex}-{(int)p_OnTrainProgressTime}{p_OnTrainProgressTime}.png",

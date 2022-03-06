@@ -34,36 +34,56 @@ namespace NeuralNetworkSample3_Layers
             return _Layer.LastLayer.Neurons.Select(n => n.LastCalculatedOutputSigmoid).ToList();
         }
 
-        public void Train(List<List<double>> p_Data, List<double> p_ExpectedResults, int p_Epochs = 1000, double p_LearnRate = 2.5)
+        public void Train(List<List<double>> p_Data, List<double> p_ExpectedResults, int p_Epochs = 1000, double p_LearnRate = 2.5, double p_TrainEndWithLossPercent = 0)
         {
             StringBuilder sb = new StringBuilder();
             _Layer.GetDebugInfo(sb);
             Console.WriteLine(sb.ToString());
 
+            bool trained = false;
             for (int epoch = 0; epoch < p_Epochs; epoch++)
             {
                 if (epoch == 0)
-                    Console.WriteLine($"Epoch 0 START percent missed: {PercentMiss(p_Data, p_ExpectedResults)}");
+                    Console.WriteLine($"Epoch 0 START PercentMissAll: {PercentMiss(p_Data, p_ExpectedResults):f3}%");
                 for (int x = 0; x < p_ExpectedResults.Count; x++)
                 {
                     var percentMissAll = PercentMiss(p_Data, p_ExpectedResults);
                     var percentMiss = PercentMiss(p_Data[x], p_ExpectedResults[x]);
                     _Layer.CalculateInputs(p_Data[x]);
+                    
                     OnAfterTrainOneItem?.Invoke(OnTrainProgressTime.BeforeCalculate, _Layer, epoch, x, p_Data[x], p_ExpectedResults[x], percentMissAll, percentMiss);
+                    if (percentMissAll <= p_TrainEndWithLossPercent)
+                    {
+                        Console.WriteLine($"Epoch {epoch} DataIndex {x} TRAINED: PercentMissAll {percentMissAll:f3}% <= TrainEndWithLossPercent {p_TrainEndWithLossPercent}%");
+                        trained = true;
+                        break;
+                    }
 
                     //Calculate partial derivatives.
                     //Naming: d_L_d_w1 represents "partial L / partial w1"
-                    var o1 = _Layer.NextLayer.Neurons[0].LastCalculatedOutputSigmoid;
+                    var o1 = _Layer.LastLayer.Neurons[0].LastCalculatedOutputSigmoid;
                     var partialDerivates = -2 * (p_ExpectedResults[x] - o1);
-                    _Layer.NextLayer.Neurons[0].BackPropagate(p_Data[x], partialDerivates, p_LearnRate);
-                    OnAfterTrainOneItem?.Invoke(OnTrainProgressTime.AfterBackPropagation, _Layer, epoch, x, p_Data[x], p_ExpectedResults[x], PercentMiss(p_Data, p_ExpectedResults), PercentMiss(p_Data[x], p_ExpectedResults[x]));
+                    _Layer.LastLayer.Neurons[0].BackPropagate(p_Data[x], partialDerivates, p_LearnRate);
+                    
+                    percentMissAll = PercentMiss(p_Data, p_ExpectedResults);
+                    percentMiss = PercentMiss(p_Data[x], p_ExpectedResults[x]);
+                    OnAfterTrainOneItem?.Invoke(OnTrainProgressTime.AfterBackPropagation, _Layer, epoch, x, p_Data[x], p_ExpectedResults[x], percentMissAll, percentMiss);
+                    if (percentMissAll <= p_TrainEndWithLossPercent)
+                    {
+                        Console.WriteLine($"Epoch {epoch} DataIndex {x} TRAINED: PercentMissAll {percentMissAll:f3}% <= TrainEndWithLossPercent {p_TrainEndWithLossPercent}%");
+                        trained = true;
+                        break;
+                    }
                 }
+
+                if (trained)
+                    break;
 
                 //Calculate total loss at the end of each epoch
                 if (epoch % 10 == 0 || epoch == p_Epochs - 1)
                 {
-                    var percentMiss = PercentMiss(p_Data, p_ExpectedResults);
-                    Console.WriteLine($"Epoch {epoch} END percent missed: {percentMiss}");
+                    var percentMissAll = PercentMiss(p_Data, p_ExpectedResults);
+                    Console.WriteLine($"Epoch {epoch} END PercentMissAll: {percentMissAll:f3}%");
                 }
             }
 
@@ -75,7 +95,7 @@ namespace NeuralNetworkSample3_Layers
         private double PercentMiss(List<double> p_Data, double p_ExpectedResults)
         {
             _Layer.CalculateInputs(p_Data);
-            var o1 = _Layer.NextLayer.Neurons[0].LastCalculatedOutputSigmoid;
+            var o1 = _Layer.LastLayer.Neurons[0].LastCalculatedOutputSigmoid;
 
             var actual = o1;
             var expected = p_ExpectedResults;
@@ -92,7 +112,7 @@ namespace NeuralNetworkSample3_Layers
             for (int x = 0; x < p_ExpectedResults.Count; x++)
             {
                 _Layer.CalculateInputs(p_Data[x]);
-                var o1 = _Layer.NextLayer.Neurons[0].LastCalculatedOutputSigmoid;
+                var o1 = _Layer.LastLayer.Neurons[0].LastCalculatedOutputSigmoid;
 
                 var actual = o1;
                 var expected = p_ExpectedResults[x];
