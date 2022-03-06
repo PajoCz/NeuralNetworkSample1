@@ -60,7 +60,6 @@ namespace NeuralNetworkSample3_Layers
             if (neuronsInHiddenLayer == 0)
             {
                 layerInput.AddNextLayer(layerOutput);
-                neuralNetwork = new NeuralNetworkEngine(layerOutput);
             }
             else
             {
@@ -80,8 +79,8 @@ namespace NeuralNetworkSample3_Layers
                 {
                     layerHidden.AddNextLayer(layerOutput);
                 }
-                neuralNetwork = new NeuralNetworkEngine(layerHidden);
             }
+            neuralNetwork = new NeuralNetworkEngine(layerInput);
 
             if (setMyInitValues)
             {
@@ -112,7 +111,7 @@ namespace NeuralNetworkSample3_Layers
                     StringBuilder sb =
                         new StringBuilder(
                             $"{Environment.NewLine}------{Environment.NewLine}{DateTime.Now} INIT. PercentMissAll: {p_PercentMissAll:f3}%{Environment.NewLine}");
-                    p_NeuralInputLayer.GetDebugInfo(sb);
+                    p_NeuralInputLayer.NextLayer.GetDebugInfo(sb);
                     File.AppendAllText($"{logFolder}\\_log.txt", sb.ToString());
                 }
 
@@ -121,7 +120,7 @@ namespace NeuralNetworkSample3_Layers
                 {
                     StringBuilder sb =
                         new StringBuilder($"{DateTime.Now} END. PercentMissAll: {p_PercentMissAll:f3}%{Environment.NewLine}");
-                    p_NeuralInputLayer.GetDebugInfo(sb);
+                    p_NeuralInputLayer.NextLayer.GetDebugInfo(sb);
                     File.AppendAllText($"{logFolder}\\_log.txt", sb.ToString());
                 }
 
@@ -129,7 +128,7 @@ namespace NeuralNetworkSample3_Layers
                 {
                     StringBuilder sb =
                         new StringBuilder($"{DateTime.Now} TRAINED Epoch={p_Epoch} , DataIndex={p_DataIndex} {p_OnTrainProgressTime}. PercentMissAll: {p_PercentMissAll:f3}%{Environment.NewLine} <= trainEndWithLossPercent {trainEndWithLossPercent}%{Environment.NewLine}");
-                    p_NeuralInputLayer.GetDebugInfo(sb);
+                    p_NeuralInputLayer.NextLayer.GetDebugInfo(sb);
                     File.AppendAllText($"{logFolder}\\_log.txt", sb.ToString());
                 }
             }
