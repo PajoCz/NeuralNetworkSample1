@@ -47,6 +47,8 @@ namespace NeuralNetworkSample3_Layers
         };
         static List<double> expectedOutputs = new() {1, 0, 0, 1};   //Gender 1 female, 0 male
 
+        static LearnProgressToImage learnProgressToImage = new();
+
         static void Main(string[] args)
         {
             NeuralLayer layerInput = new NeuralLayer();
@@ -94,6 +96,13 @@ namespace NeuralNetworkSample3_Layers
             
             neuralNetwork.Train(data, expectedOutputs, epochs, learnRate, trainEndWithLossPercent);
 
+            using (Bitmap imgLearn =
+                   learnProgressToImage.CreateImage(logStepsToImageWidth, logStepsToImageHeight))
+            {
+                imgLearn.Save(
+                    $"{logFolder}\\_LearnProgress.png", ImageFormat.Png);
+            }
+
             //PREDICT - check non trained data
             var result = neuralNetwork.Calculate(new List<double> { -2, -1 })[0];
             result = neuralNetwork.Calculate(new List<double> { -20, -5 })[0];
@@ -103,6 +112,21 @@ namespace NeuralNetworkSample3_Layers
 
         private static void NetworkOnOnAfterTrainOneItem(NeuralNetworkEngine.OnTrainProgressTime p_OnTrainProgressTime, NeuralLayer p_NeuralInputLayer, int p_Epoch, int p_DataIndex, List<double> p_Data, double p_ExpectedResult, double? p_PercentMissAll, double? p_PercentMiss)
         {
+            if (p_Epoch == 0 && p_DataIndex == 0 &&
+                p_OnTrainProgressTime == NeuralNetworkEngine.OnTrainProgressTime.BeforeCalculate)
+            {
+                learnProgressToImage.PercentMissAllStart = p_PercentMissAll ?? 100;
+            }
+
+            if (p_OnTrainProgressTime == NeuralNetworkEngine.OnTrainProgressTime.AfterBackPropagation)
+            {
+                //if (p_DataIndex == p_Data.Count-1)
+                learnProgressToImage.PercentMissAll.Add(p_PercentMissAll ?? 100);
+                if (learnProgressToImage.PercentMissDataIndex.Count == p_DataIndex)
+                    learnProgressToImage.PercentMissDataIndex.Add(new List<double>());
+                learnProgressToImage.PercentMissDataIndex[p_DataIndex].Add(p_PercentMissAll ?? 100);
+            }
+
             if (logTextFile)
             {
                 if (p_Epoch == 0 && p_DataIndex == 0 &&

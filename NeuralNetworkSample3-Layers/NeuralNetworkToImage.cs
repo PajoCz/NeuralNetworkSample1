@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.Linq;
@@ -20,6 +21,7 @@ namespace NeuralNetworkSample3_Layers
             Bitmap bitmap = new Bitmap(p_Width, p_Height);
             using Graphics graphics = Graphics.FromImage(bitmap);
             graphics.TextRenderingHint = TextRenderingHint.AntiAlias;
+            graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
             int maxNeuronsInLayer = 0;
             var l = p_NeuralNetwork;
