@@ -65,12 +65,12 @@ namespace NeuralNetworkSample3_Layers
 
             //last paint PercentMissAll
             points = new List<Point>(PercentMissAll.Count + 1);
-            x = widthBorder;
+            x = (width - 2 * widthBorder) / (double)PercentMissAll.Count * -1 + widthBorder;
             y = (100 - PercentMissAllStart) / 100 * (p_Height - 2 * heightBorder) + heightBorder;
             points.Add(new Point((int)x, (int)y));
             for (var i = 0; i < PercentMissAll.Count; i++)
             {
-                x = (width - 2 * widthBorder) / (double)PercentMissAll.Count * (i + 1) + widthBorder;
+                x = (width - 2 * widthBorder) / (double)PercentMissAll.Count * i + widthBorder;
                 y = (100 - PercentMissAll[i]) / 100 * (p_Height - 2 * heightBorder) + heightBorder;
                 points.Add(new Point((int)x, (int)y));
             }

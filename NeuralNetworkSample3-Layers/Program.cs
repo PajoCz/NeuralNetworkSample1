@@ -120,8 +120,8 @@ namespace NeuralNetworkSample3_Layers
 
             if (p_OnTrainProgressTime == NeuralNetworkEngine.OnTrainProgressTime.AfterBackPropagation)
             {
-                //if (p_DataIndex == p_Data.Count-1)
-                learnProgressToImage.PercentMissAll.Add(p_PercentMissAll ?? 100);
+                if (p_DataIndex == p_Data.Count-1)
+                 learnProgressToImage.PercentMissAll.Add(p_PercentMissAll ?? 100);
                 if (learnProgressToImage.PercentMissDataIndex.Count == p_DataIndex)
                     learnProgressToImage.PercentMissDataIndex.Add(new List<double>());
                 learnProgressToImage.PercentMissDataIndex[p_DataIndex].Add(p_PercentMissAll ?? 100);
