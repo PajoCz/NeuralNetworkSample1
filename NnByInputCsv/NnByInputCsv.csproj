@@ -10,6 +10,7 @@
     <PackageReference Include="Microsoft.ML.FastTree" Version="1.6.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NnEngineStateToImage\NnEngineStateToImage.csproj" />
     <ProjectReference Include="..\NnEngine\NnEngine.csproj" />
   </ItemGroup>
 </Project>

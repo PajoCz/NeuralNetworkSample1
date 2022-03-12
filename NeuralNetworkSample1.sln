@@ -9,9 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NeuralNetworkSample2-Refact
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NeuralNetworkSample3-Layers", "NeuralNetworkSample3-Layers\NeuralNetworkSample3-Layers.csproj", "{BAAD5712-EF29-4BD9-9DD1-2F3B396DA5CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NnByInputCsv", "NnByInputCsv\NnByInputCsv.csproj", "{3846CE9B-F702-4184-9FF1-5238FBFFED25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NnByInputCsv", "NnByInputCsv\NnByInputCsv.csproj", "{3846CE9B-F702-4184-9FF1-5238FBFFED25}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NnEngine", "NnEngine\NnEngine.csproj", "{727A3CEA-901F-4597-8A1B-3627E1479485}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NnEngine", "NnEngine\NnEngine.csproj", "{727A3CEA-901F-4597-8A1B-3627E1479485}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleNn", "SimpleNn\SimpleNn.csproj", "{4477C499-BFC1-48E1-AC0E-1701F7516E51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NnEngineStateToImage", "NnEngineStateToImage\NnEngineStateToImage.csproj", "{E30AD271-12CE-4EFB-8A47-769345D6488F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +43,14 @@ Global
 		{727A3CEA-901F-4597-8A1B-3627E1479485}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{727A3CEA-901F-4597-8A1B-3627E1479485}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{727A3CEA-901F-4597-8A1B-3627E1479485}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4477C499-BFC1-48E1-AC0E-1701F7516E51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4477C499-BFC1-48E1-AC0E-1701F7516E51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4477C499-BFC1-48E1-AC0E-1701F7516E51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4477C499-BFC1-48E1-AC0E-1701F7516E51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E30AD271-12CE-4EFB-8A47-769345D6488F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E30AD271-12CE-4EFB-8A47-769345D6488F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E30AD271-12CE-4EFB-8A47-769345D6488F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E30AD271-12CE-4EFB-8A47-769345D6488F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

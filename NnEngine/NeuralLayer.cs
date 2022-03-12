@@ -4,9 +4,20 @@ namespace NnEngine
 {
     public class NeuralLayer
     {
-        public List<Neuron> Neurons { get; set; } = new List<Neuron>();
+        public NeuralLayer(IActivationFunction p_ActivationFunction = null, bool p_IsInputLayer = false)
+        {
+            ActivationFunction = p_ActivationFunction;
+            IsInputLayer = p_IsInputLayer;
+            if (!IsInputLayer && ActivationFunction == null)
+                throw new ArgumentException("IsInputLayer==false with ActivationFunction==null");
+        }
+
+        public List<Neuron> Neurons { get; set; } = new();
         public NeuralLayer NextLayer { get; set; }
         public NeuralLayer LastLayer => NextLayer == null ? this : NextLayer.LastLayer;
+
+        public IActivationFunction ActivationFunction { get; set; }
+        public bool IsInputLayer { get; set; }
 
 
         /// <summary>
@@ -33,24 +44,25 @@ namespace NnEngine
             return result ?? NextLayer?.FindNeuronById(p_Id);
         }
 
-        public void CalculateInputs(List<float> p_Inputs)
+        public void FeedForward(List<float> p_Inputs)
         {
             Neurons.ForEach(n =>
             {
                 if (!n.SynapsesToPreviousLayer.Any())
                     n.SynapsesToPreviousLayer.Add(new Synapse(null, n, 1));
-                n.CalcBySigmoid(p_Inputs);
+                n.Calculate(p_Inputs, ActivationFunction);
             });
-            NextLayer?.CalculateByPreviousLayer();
+            NextLayer?.FeedForwardToNextLayer(ActivationFunction);
         }
 
-        private void CalculateByPreviousLayer()
+        private void FeedForwardToNextLayer(IActivationFunction p_ActivationFunction)
         {
             Neurons.ForEach(n =>
             {
-                var data = n.SynapsesToPreviousLayer.Select(i => i.From.LastCalculatedOutputSigmoid).ToList();
-                n.CalcBySigmoid(data);
+                var data = n.SynapsesToPreviousLayer.Select(i => i.From.LastCalculatedOutputActivated).ToList();
+                n.Calculate(data, p_ActivationFunction);
             });
+            NextLayer?.FeedForwardToNextLayer(ActivationFunction);
         }
 
         public void GetDebugInfo(StringBuilder sb)
