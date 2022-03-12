@@ -12,10 +12,10 @@ namespace NnByInputCsv
     class Program
     {
         //SETTINGS - neural network
-        const float neuronsInHiddenMultiplyByInput = 1; //0 means no hidden layer
+        const float neuronsInHiddenMultiplyByInput = 2; //0 means no hidden layer
         const float neuronsInSecondHiddenLayerMultiplyByInput = 0;    //0 means no second hidden layer
         //static int neuronsInSecondHiddenLayer = 2;    //0 means no hidden layer
-        const int epochs = 100;
+        const int epochs = 1000;
         const float learnRate = 2.5f;
         const float trainEndWithLossPercent = 0.8f;
 
@@ -32,8 +32,8 @@ namespace NnByInputCsv
         static void Main(string[] args)
         {
 
-            //var fn = "Dataset1-xor.csv";
-            var fn = "Dataset1-sample-posun.csv";
+            var fn = "Dataset1-xor.csv";
+            //var fn = "Dataset1-sample-posun.csv";
             //var fn = "Dataset1-sample.csv";
             //var fn = "Dataset1-sample-outputVelky.csv";
             //var fn = "Dataset1-ukol-posun.csv";
@@ -107,8 +107,8 @@ namespace NnByInputCsv
 
             nne.OnAfterTrainOneItem += NetworkOnOnAfterTrainOneItem;
 
-            nne.Train(data.Item1, data.Item2, epochs, learnRate, trainEndWithLossPercent);
-            //nne.Train(dataNormalizedInput, dataNormalizedOutput.Select(i => i.First()).ToList(), epochs, learnRate, trainEndWithLossPercent, minMaxScalerOutput);
+            //nne.Train(data.Item1, data.Item2, epochs, learnRate, trainEndWithLossPercent);
+            nne.Train(dataNormalizedInput, dataNormalizedOutput.Select(i => i.First()).ToList(), epochs, learnRate, trainEndWithLossPercent, minMaxScalerOutput);
         }
 
         static LearnProgressToImage learnProgressToImage = new();
