@@ -5,6 +5,7 @@ namespace NnEngine
     public class NeuralNetworkEngine
     {
         private readonly NeuralLayer _LayerInput;
+        private MinMaxScaler _MinMaxScalerInput, _MinMaxScalerOutput;
 
         private List<NeuralLayer> LayersList()
         {
@@ -41,13 +42,23 @@ namespace NnEngine
 
         public List<float> Calculate(List<float> p_Data)
         {
-            _LayerInput.NextLayer.FeedForward(p_Data);
-            return _LayerInput.LastLayer.Neurons.Select(n => n.LastCalculatedOutputActivated).ToList();
+            var data = _MinMaxScalerInput?.Transform(new List<List<float>>() {p_Data}, -0.5f).First().ToList() ?? p_Data;   //vystup -0.5 .. 0.5
+            _LayerInput.NextLayer.FeedForward(data);
+            var calculated = _LayerInput.LastLayer.Neurons.Select(n => n.LastCalculatedOutputActivated).ToList();
+            var calculatedScaled = _MinMaxScalerOutput?.InverseTransform(new List<List<float>>() {calculated}).First().ToList() ?? calculated; //vystup 0 .. 1
+            return calculatedScaled;
         }
 
         public void Train(List<List<float>> p_Data, List<float> p_ExpectedResults, int p_Epochs = 1000,
-            float p_LearnRate = 2.5f, float p_TrainEndWithLossPercent = 0, MinMaxScaler p_MinMaxScalerOutput = null)
+            float p_LearnRate = 2.5f, float p_TrainEndWithLossPercent = 0, MinMaxScaler p_MinMaxScalerInput = null,
+            MinMaxScaler p_MinMaxScalerOutput = null)
         {
+            _MinMaxScalerInput = p_MinMaxScalerInput;
+            _MinMaxScalerOutput = p_MinMaxScalerOutput;
+
+            var data = p_MinMaxScalerInput?.Transform(p_Data, -0.5f) ?? p_Data;   //vystup -0.5 .. 0.5
+            var dataOutput = p_MinMaxScalerOutput?.Transform(p_ExpectedResults.ConvertAll(i => new List<float>() {i})).Select(i => i.First()).ToList() ?? p_ExpectedResults; //vystup 0 .. 1
+
             StringBuilder sb = new StringBuilder();
             _LayerInput.NextLayer.GetDebugInfo(sb);
             Console.WriteLine(sb.ToString());
@@ -56,14 +67,14 @@ namespace NnEngine
             for (int epoch = 0; epoch < p_Epochs; epoch++)
             {
                 if (epoch == 0)
-                    Console.WriteLine($"Epoch 0 START PercentMissAll: {PercentMiss(p_Data, p_ExpectedResults):f3}%");
-                for (int x = 0; x < p_ExpectedResults.Count; x++)
+                    Console.WriteLine($"Epoch 0 START PercentMissAll: {PercentMiss(data, dataOutput):f3}%");
+                for (int x = 0; x < dataOutput.Count; x++)
                 {
-                    var percentMissAll = PercentMiss(p_Data, p_ExpectedResults);
-                    var percentMiss = PercentMiss(p_Data[x], p_ExpectedResults[x]);
-                    _LayerInput.NextLayer.FeedForward(p_Data[x]);
+                    var percentMissAll = PercentMiss(data, dataOutput);
+                    var percentMiss = PercentMiss(data[x], dataOutput[x]);
+                    _LayerInput.NextLayer.FeedForward(data[x]);
                     
-                    OnAfterTrainOneItem?.Invoke(OnTrainProgressTime.BeforeCalculate, _LayerInput, epoch, x, p_Data[x], p_ExpectedResults[x], percentMissAll, percentMiss);
+                    OnAfterTrainOneItem?.Invoke(OnTrainProgressTime.BeforeCalculate, _LayerInput, epoch, x, data[x], dataOutput[x], percentMissAll, percentMiss);
                     if (percentMissAll <= p_TrainEndWithLossPercent)
                     {
                         Console.WriteLine($"Epoch {epoch} DataIndex {x} TRAINED: PercentMissAll {percentMissAll:f3}% <= TrainEndWithLossPercent {p_TrainEndWithLossPercent}%");
@@ -71,69 +82,11 @@ namespace NnEngine
                         break;
                     }
 
+                    BackPropagate(data[x], dataOutput[x], p_LearnRate);
 
-                    ////Calculate partial derivatives.
-                    ////Naming: d_L_d_w1 represents "partial L / partial w1"
-                    //var o1 = _LayerInput.LastLayer.Neurons[0].LastCalculatedOutputActivated;
-                    ////if (p_MinMaxScalerOutput != null)
-                    ////    o1 = p_MinMaxScalerOutput.InverseTransform(new List<List<float>>() { new List<float>() { o1 } }).First().First();
-                    //var partialDerivates = -2 * (p_ExpectedResults[x] - o1);
-                    //_LayerInput.LastLayer.Neurons[0].BackPropagate(p_Data[x], partialDerivates, p_LearnRate);
-
-                    BackPropagate(p_Data[x], p_ExpectedResults[x], p_LearnRate);
-
-
-                    //var layers = LayersList();
-
-                    //float[][] gamma;
-
-
-                    //List<float[]> gammaList = new List<float[]>();
-                    //for (int i = 0; i < layers.Count; i++)
-                    //{
-                    //    gammaList.Add(new float[layers[i].Neurons.Count]);
-                    //}
-                    //gamma = gammaList.ToArray();//gamma initialization
-
-                    //for (int i = 0; i < _LayerInput.LastLayer.Neurons.Count; i++) gamma[layers.Count - 1][i] = (p_ExpectedResults[x] - _LayerInput.LastLayer.Neurons[i].LastCalculatedOutputSigmoid) * -(layers.Count-1);//Gamma calculation
-                    //for (int i = 0; i < _LayerInput.LastLayer.Neurons.Count; i++)//calculates the w' and b' for the last layer in the network
-                    //{
-                    //    _LayerInput.LastLayer.Neurons[i].Bias -= gamma[layers.Count - 1][i] * Neuron.DerivSigmoid(_LayerInput.LastLayer.Neurons[i].LastCalculatedOutput) * p_LearnRate;
-                    //    for (int j = 0; j < _LayerInput.LastLayer.Neurons[i].SynapsesToPreviousLayer.Count; j++)
-                    //    {
-                    //        _LayerInput.LastLayer.Neurons[i].SynapsesToPreviousLayer[j].Weight -= gamma[layers.Count - 1][i] * Neuron.DerivSigmoid(_LayerInput.LastLayer.Neurons[i].LastCalculatedOutput) * _LayerInput.LastLayer.Neurons[i].SynapsesToPreviousLayer[j].From.LastCalculatedOutputSigmoid * p_LearnRate;//*learning 
-                    //    }
-                    //}
-
-                    //for (int i = layers.Count - 2; i > 0; i--)//runs on all hidden layers
-                    //{
-                    //    for (int j = 0; j < layers[i].Neurons.Count; j++)//outputs
-                    //    {
-                    //        gamma[i][j] = 0;
-                    //        for (int k = 0; k < gamma[i + 1].Length; k++)
-                    //        {
-                    //            gamma[i][j] += gamma[i + 1][k] * Neuron.DerivSigmoid(layers[i].Neurons[j].SynapsesToNextLayer[k].To.LastCalculatedOutput) * layers[i].Neurons[j].SynapsesToNextLayer[k].Weight;
-                    //        }
-
-                    //        //gamma[i][j] *= layers[i].Neurons[j].LastCalculatedOutputSigmoid;
-                    //    }
-                    //    for (int j = 0; j < layers[i].Neurons.Count; j++)//itterate over outputs of layer
-                    //    {
-                    //        layers[i].Neurons[j].Bias -= gamma[i][j] * Neuron.DerivSigmoid(layers[i].Neurons[j].LastCalculatedOutput) * p_LearnRate;
-                    //        for (int k = 0; k < layers[i - 1].Neurons[j].SynapsesToPreviousLayer.Count; k++)//itterate over inputs to layer
-                    //        {
-                    //            layers[i].Neurons[j].SynapsesToPreviousLayer[k].Weight -= gamma[i][j] * layers[i - 1].Neurons[j].LastCalculatedOutputSigmoid * p_LearnRate;
-                    //        }
-
-                    //        if (!layers[i - 1].Neurons[0].SynapsesToPreviousLayer.Any())
-                    //            for (int k = 0; k < p_Data[x].Count; k++)
-                    //                layers[i].Neurons[j].SynapsesToPreviousLayer[k].Weight -= gamma[i][j] * p_Data[x][k] * Neuron.DerivSigmoid(layers[i].Neurons[j].LastCalculatedOutput) * p_LearnRate;
-                    //    }
-                    //}
-
-                    percentMissAll = PercentMiss(p_Data, p_ExpectedResults);
-                    percentMiss = PercentMiss(p_Data[x], p_ExpectedResults[x]);
-                    OnAfterTrainOneItem?.Invoke(OnTrainProgressTime.AfterBackPropagation, _LayerInput, epoch, x, p_Data[x], p_ExpectedResults[x], percentMissAll, percentMiss);
+                    percentMissAll = PercentMiss(data, dataOutput);
+                    percentMiss = PercentMiss(data[x], dataOutput[x]);
+                    OnAfterTrainOneItem?.Invoke(OnTrainProgressTime.AfterBackPropagation, _LayerInput, epoch, x, data[x], dataOutput[x], percentMissAll, percentMiss);
                     if (percentMissAll <= p_TrainEndWithLossPercent)
                     {
                         Console.WriteLine($"Epoch {epoch} DataIndex {x} TRAINED: PercentMissAll {percentMissAll:f3}% <= TrainEndWithLossPercent {p_TrainEndWithLossPercent}%");
@@ -148,7 +101,7 @@ namespace NnEngine
                 //Calculate total loss at the end of each epoch
                 if (epoch % 10 == 0 || epoch == p_Epochs - 1)
                 {
-                    var percentMissAll = PercentMiss(p_Data, p_ExpectedResults);
+                    var percentMissAll = PercentMiss(data, dataOutput);
                     Console.WriteLine($"Epoch {epoch} END PercentMissAll: {percentMissAll:f3}%");
                 }
             }

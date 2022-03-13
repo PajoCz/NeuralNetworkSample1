@@ -16,7 +16,7 @@ namespace NnByInputCsv
         const float neuronsInSecondHiddenLayerMultiplyByInput = 0;    //0 means no second hidden layer
         //static int neuronsInSecondHiddenLayer = 2;    //0 means no hidden layer
         const int epochs = 10000;
-        const float learnRate = 1f;
+        const float learnRate = 2f;
         const float trainEndWithLossPercent = 0.8f;
 
         //setMyInitValues use only for start sample with 2 hidden neurons
@@ -33,11 +33,10 @@ namespace NnByInputCsv
         static void Main(string[] args)
         {
 
-            var fn = "Dataset1-xor.csv";
+            //var fn = "Dataset1-xor.csv";
             //var fn = "Dataset1-sample-posun.csv";
             //var fn = "Dataset1-sample.csv";
-            //var fn = "Dataset1-sample-outputVelky.csv";
-            //var fn = "Dataset1-ukol-posun.csv";
+            var fn = "Dataset1-sample-outputVelky.csv";
             //var fn = "Dataset1-ukol.csv";
             using FileStream fs =
                 new FileStream(@"c:\Users\pajo\source\repos\NeuralNetworkSample1\NnByInputCsv\" + fn,
@@ -50,10 +49,10 @@ namespace NnByInputCsv
             MinMaxScaler minMaxScalerInput = new MinMaxScaler();
             minMaxScalerInput.Fit(data.Item1);
             var columnsWithConstValues = minMaxScalerInput.ColumnsWithConstValues();
-            var dataNormalizedInput = minMaxScalerInput.Transform(data.Item1, -0.5f);   //vystup -0.5 .. 0.5
+            //var dataNormalizedInput = minMaxScalerInput.Transform(data.Item1, -0.5f);   //vystup -0.5 .. 0.5
             MinMaxScaler minMaxScalerOutput = new MinMaxScaler();
             minMaxScalerOutput.Fit(data.Item2.ConvertAll(i => new List<float>() {i}));
-            var dataNormalizedOutput = minMaxScalerOutput.Transform(data.Item2.ConvertAll(i => new List<float>() {i})); //vystup 0 .. 1
+            //var dataNormalizedOutput = minMaxScalerOutput.Transform(data.Item2.ConvertAll(i => new List<float>() {i})); //vystup 0 .. 1
 
             var afSigmoid = new ActivationFunctionSigmoid();
             
@@ -109,7 +108,8 @@ namespace NnByInputCsv
             nne.OnAfterTrainOneItem += NetworkOnOnAfterTrainOneItem;
 
             //nne.Train(data.Item1, data.Item2, epochs, learnRate, trainEndWithLossPercent);
-            nne.Train(dataNormalizedInput, dataNormalizedOutput.Select(i => i.First()).ToList(), epochs, learnRate, trainEndWithLossPercent, minMaxScalerOutput);
+            //nne.Train(dataNormalizedInput, dataNormalizedOutput.Select(i => i.First()).ToList(), epochs, learnRate, trainEndWithLossPercent, minMaxScalerInput, minMaxScalerOutput);
+            nne.Train(data.Item1, data.Item2, epochs, learnRate, trainEndWithLossPercent, minMaxScalerInput, minMaxScalerOutput);
 
             if (logLearnProgressToImage)
             {
@@ -119,6 +119,19 @@ namespace NnByInputCsv
                     imgLearn.Save(
                         $"{logFolder}\\_LearnProgress.png", ImageFormat.Png);
                 }
+            }
+
+            //Test Nn calculation
+            Console.WriteLine(string.Join("; ", reader._Header));
+            for(int i=0; i<data.Item1.Count; i++)
+            {
+                var actual = nne.Calculate(data.Item1[i])[0];   //only one output neuron at index [0]
+                var expected = data.Item2[i];
+                Console.Write(string.Join("; ", data.Item1[i]));
+                var missed = expected != 0
+                    ? Math.Abs((actual / expected - 1f) * 100f)
+                    :actual * 100f;
+                Console.WriteLine($"; Expected={expected}; Calculated={actual}; {missed:f3}% missed" );
             }
         }
 
