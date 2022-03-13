@@ -49,10 +49,8 @@ namespace NnByInputCsv
             MinMaxScaler minMaxScalerInput = new MinMaxScaler();
             minMaxScalerInput.Fit(data.Item1);
             var columnsWithConstValues = minMaxScalerInput.ColumnsWithConstValues();
-            //var dataNormalizedInput = minMaxScalerInput.Transform(data.Item1, -0.5f);   //vystup -0.5 .. 0.5
             MinMaxScaler minMaxScalerOutput = new MinMaxScaler();
             minMaxScalerOutput.Fit(data.Item2.ConvertAll(i => new List<float>() {i}));
-            //var dataNormalizedOutput = minMaxScalerOutput.Transform(data.Item2.ConvertAll(i => new List<float>() {i})); //vystup 0 .. 1
 
             var afSigmoid = new ActivationFunctionSigmoid();
             
@@ -108,7 +106,6 @@ namespace NnByInputCsv
             nne.OnAfterTrainOneItem += NetworkOnOnAfterTrainOneItem;
 
             //nne.Train(data.Item1, data.Item2, epochs, learnRate, trainEndWithLossPercent);
-            //nne.Train(dataNormalizedInput, dataNormalizedOutput.Select(i => i.First()).ToList(), epochs, learnRate, trainEndWithLossPercent, minMaxScalerInput, minMaxScalerOutput);
             nne.Train(data.Item1, data.Item2, epochs, learnRate, trainEndWithLossPercent, minMaxScalerInput, minMaxScalerOutput);
 
             if (logLearnProgressToImage)
