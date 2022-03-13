@@ -9,22 +9,28 @@ namespace NnEngine
     public class NnEngineStorage
     {
         private const string FILE_FIRST_LINE = "NnEngineStorageV1";
+        private const string Key_MinMaxScalerInput = "MinMaxScalerInput";
+        private const string Key_MinMaxScalerOutput = "MinMaxScalerOutput";
+        private const string Key_Layer = "Layer";
+        private const string Key_Neurons = "Neurons";
+        private const string Key_SynapsesToPreviousLayer = "SynapsesToPreviousLayer";
+
         public void SaveToStream(NeuralNetworkEngine p_NnEngine, Stream p_Stream)
         {
             using (StreamWriter sw = new StreamWriter(p_Stream))
             {
                 sw.WriteLine(FILE_FIRST_LINE);
 
-                sw.WriteLine($"MinMaxScalerInput={string.Join("|", p_NnEngine.MinMaxScalerInput.ColumnMinMaxValues.Select(i => $"{i.Min};{i.Max}"))}");
-                sw.WriteLine($"MinMaxScalerOutput={string.Join("|", p_NnEngine.MinMaxScalerOutput.ColumnMinMaxValues.Select(i => $"{i.Min};{i.Max}"))}");
+                sw.WriteLine($"{Key_MinMaxScalerInput}={string.Join("|", p_NnEngine.MinMaxScalerInput.ColumnMinMaxValues.Select(i => $"{i.Min};{i.Max}"))}");
+                sw.WriteLine($"{Key_MinMaxScalerOutput}={string.Join("|", p_NnEngine.MinMaxScalerOutput.ColumnMinMaxValues.Select(i => $"{i.Min};{i.Max}"))}");
 
                 var layers = p_NnEngine.LayersList();
                 for (var iLayer = 0; iLayer < layers.Count; iLayer++)
                 {
                     var layer = layers[iLayer];
-                    sw.WriteLine($"Layer={layer.ActivationFunction}");
+                    sw.WriteLine($"{Key_Layer}={layer.ActivationFunction}");
                     StringBuilder sbSynapse = new StringBuilder();
-                    sw.Write("Neurons=");
+                    sw.Write($"{Key_Neurons}=");
                     for (int iNeuron = 0; iNeuron < layers[iLayer].Neurons.Count; iNeuron++)
                     {
                         var neuron = layer.Neurons[iNeuron];
@@ -36,7 +42,7 @@ namespace NnEngine
                         }
                     }
                     sw.WriteLine();
-                    sw.WriteLine("SynapsesToPreviousLayer=" + sbSynapse);
+                    sw.WriteLine($"{Key_SynapsesToPreviousLayer}=" + sbSynapse);
                 }
             }
         }
@@ -49,21 +55,14 @@ namespace NnEngine
                 if (version != FILE_FIRST_LINE)
                     throw new Exception($"File first line must be '{FILE_FIRST_LINE}' but value is '{version}'");
 
-                var line = sw.ReadLine();
-                if (line == null)
+                string lineValue;
+                if (!ReadLine(sw, Key_MinMaxScalerInput, out lineValue)) 
                     return null;
-                var lineParsed = line.Split('=');
-                if (lineParsed[0] != "MinMaxScalerInput")
-                    throw new Exception("MinMaxScalerInput data expected");
-                var minMaxScalerInput = lineParsed[1].Split('|');
+                var minMaxScalerInput = lineValue.Split('|');
 
-                line = sw.ReadLine();
-                if (line == null)
+                if (!ReadLine(sw, Key_MinMaxScalerOutput, out lineValue)) 
                     return null;
-                lineParsed = line.Split('=');
-                if (lineParsed[0] != "MinMaxScalerOutput")
-                    throw new Exception("MinMaxScalerOutput data expected");
-                var minMaxScalerOutput = lineParsed[1].Split('|');
+                var minMaxScalerOutput = lineValue.Split('|');
 
                 var layer = LoadLayer(sw);
                 var result = new NeuralNetworkEngine(layer.Item1);
@@ -93,34 +92,36 @@ namespace NnEngine
             }
         }
 
-        private static Tuple<NeuralLayer, List<float>> LoadLayer(StreamReader sw)
+        private static bool ReadLine(StreamReader sw, string expectedLine, out string? lineValue)
         {
+            lineValue = null;
             var line = sw.ReadLine();
             if (line == null)
-                return null;
+                return false;
             var lineParsed = line.Split('=');
-            if (lineParsed[0] != "Layer")
-                throw new Exception("Layer data expected");
-            var lineValues = lineParsed[1].Split(';');
+            if (lineParsed[0] != expectedLine)
+                throw new Exception($"{expectedLine} data expected");
+            lineValue = lineParsed[1];
+            return true;
+        }
 
-            var activationFunction = string.IsNullOrEmpty(lineValues[0])
-                ? null
-                : Activator.CreateInstance("NnEngine", lineValues[0])?.Unwrap() as IActivationFunction;
+        private static Tuple<NeuralLayer, List<float>>? LoadLayer(StreamReader sw)
+        {
+            string? lineValue;
+            if (!ReadLine(sw, Key_Layer, out lineValue)) 
+                return null;
+            var lineValues = lineValue.Split(';');
+
+            var activationFunction = string.IsNullOrEmpty(lineValues[0]) ? null : Activator.CreateInstance("NnEngine", lineValues[0])?.Unwrap() as IActivationFunction;
             NeuralLayer layer = new NeuralLayer(activationFunction, true);
 
-            line = sw.ReadLine();
-            lineParsed = line.Split('=');
-            if (lineParsed[0] != "Neurons")
-                throw new Exception("Neurons data expected");
-            lineValues = lineParsed[1].Trim(';').Split(';');
+            ReadLine(sw, Key_Neurons, out lineValue);
+            lineValues = lineValue.Trim(';').Split(';');
             for (int iNeuron = 0; iNeuron < lineValues.Length / 2; iNeuron++)
                 layer.Neurons.Add(new Neuron(lineValues[iNeuron * 2], float.Parse(lineValues[iNeuron * 2 + 1])));
 
-            line = sw.ReadLine();
-            lineParsed = line.Split('=');
-            if (lineParsed[0] != "SynapsesToPreviousLayer")
-                throw new Exception("SynapsesToPreviousLayer data expected");
-            var synapseWeights = string.IsNullOrEmpty(lineParsed[1]) ? null : lineParsed[1].Trim(';').Split(';').Select(i => float.Parse(i)).ToList();
+            ReadLine(sw, Key_SynapsesToPreviousLayer, out lineValue);
+            var synapseWeights = string.IsNullOrEmpty(lineValue) ? null : lineValue.Trim(';').Split(';').Select(i => float.Parse(i)).ToList();
 
             return new Tuple<NeuralLayer, List<float>>(layer, synapseWeights);
         }
