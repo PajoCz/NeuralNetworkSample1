@@ -40,23 +40,23 @@ namespace NnEngineStateToImage
 
             List<Point> points;
             float x, y;
-            for (var iData = 0; iData < PercentMissDataIndex.Count; iData++)
-            {
-                var data = PercentMissDataIndex[iData];
-                points = new List<Point>(data.Count);
-                for (int i = 0; i < data.Count; i++)
-                {
-                    x = (width - 2 * widthBorder) / (float)data.Count * i + widthBorder;
-                    y = (100 - data[i]) / 100 * (p_Height - 2 * heightBorder) + heightBorder;
-                    points.Add(new Point((int)x, (int)y));
-                }
-                graphics.DrawLines(penDataIndex[iData], points.ToArray());
-                string s = "";
-                for (int i = 0; i < iData; i++)
-                    s += Environment.NewLine;
-                s += $"DataIndex{iData}";
-                graphics.DrawString(s, font, brushDataIndex[iData], widthBorder, heightBorder);
-            }
+            //for (var iData = 0; iData < PercentMissDataIndex.Count; iData++)
+            //{
+            //    var data = PercentMissDataIndex[iData];
+            //    points = new List<Point>(data.Count);
+            //    for (int i = 0; i < data.Count; i++)
+            //    {
+            //        x = (width - 2 * widthBorder) / (float)data.Count * i + widthBorder;
+            //        y = (100 - data[i]) / 100 * (p_Height - 2 * heightBorder) + heightBorder;
+            //        points.Add(new Point((int)x, (int)y));
+            //    }
+            //    graphics.DrawLines(penDataIndex[iData], points.ToArray());
+            //    string s = "";
+            //    for (int i = 0; i < iData; i++)
+            //        s += Environment.NewLine;
+            //    s += $"DataIndex{iData}";
+            //    graphics.DrawString(s, font, brushDataIndex[iData], widthBorder, heightBorder);
+            //}
 
             //last paint PercentMissAll
             points = new List<Point>(PercentMissAll.Count + 1);
@@ -70,11 +70,11 @@ namespace NnEngineStateToImage
                 points.Add(new Point((int)x, (int)y));
             }
             graphics.DrawLines(penRed, points.ToArray());
-            string str = string.Empty;
-            for (int i = 0; i < PercentMissDataIndex.Count-1; i++)
-                str += Environment.NewLine;
-            str += "All";
-            graphics.DrawString(str, font, brushRed, widthBorder, heightBorder * 2);
+            //string str = string.Empty;
+            //for (int i = 0; i < PercentMissDataIndex.Count-1; i++)
+            //    str += Environment.NewLine;
+            //str += "All";
+            //graphics.DrawString(str, font, brushRed, widthBorder, heightBorder * 2);
 
             return bitmap;
         }

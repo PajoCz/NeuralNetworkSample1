@@ -15,8 +15,8 @@ namespace NnByInputCsv
         const float neuronsInHiddenMultiplyByInput = 2; //0 means no hidden layer
         const float neuronsInSecondHiddenLayerMultiplyByInput = 0;    //0 means no second hidden layer
         //static int neuronsInSecondHiddenLayer = 2;    //0 means no hidden layer
-        const int epochs = 1000;
-        const float learnRate = 2.5f;
+        const int epochs = 10000;
+        const float learnRate = 1f;
         const float trainEndWithLossPercent = 0.8f;
 
         //setMyInitValues use only for start sample with 2 hidden neurons
@@ -25,6 +25,7 @@ namespace NnByInputCsv
         //SETTINGS - logging progress
         static string logFolder = "D:\\NeuralNetworkProgress2";
         static bool logStepsToImages = false;   //enable/disable log images to log folder
+        static bool logLearnProgressToImage = false;   //enable/disable log images to log folder
         static int logStepsToImageWidth = 1024;
         static int logStepsToImageHeight = 768;
         static bool logTextFile = false;   //enable/disable text log start/end neurons to log folder
@@ -109,6 +110,16 @@ namespace NnByInputCsv
 
             //nne.Train(data.Item1, data.Item2, epochs, learnRate, trainEndWithLossPercent);
             nne.Train(dataNormalizedInput, dataNormalizedOutput.Select(i => i.First()).ToList(), epochs, learnRate, trainEndWithLossPercent, minMaxScalerOutput);
+
+            if (logLearnProgressToImage)
+            {
+                using (Bitmap imgLearn =
+                       learnProgressToImage.CreateImage(logStepsToImageWidth, logStepsToImageHeight))
+                {
+                    imgLearn.Save(
+                        $"{logFolder}\\_LearnProgress.png", ImageFormat.Png);
+                }
+            }
         }
 
         static LearnProgressToImage learnProgressToImage = new();
