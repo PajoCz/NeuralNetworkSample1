@@ -24,14 +24,15 @@ namespace NnEngine
         /// Join all Neurons from one layer to all Neurons of other layer - by Synapse class (referenced by both neurons from to)
         /// </summary>
         /// <param name="p_NextLayer"></param>
-        public void AddNextLayer(NeuralLayer p_NextLayer)
+        public void AddNextLayer(NeuralLayer p_NextLayer, List<float> p_SynapseWeights = null)
         {
+            int iSynapse = 0;
             NextLayer = p_NextLayer;
             p_NextLayer.Neurons.ForEach(nextLayerNeuron =>
             {
                 Neurons.ForEach(thisLayerNeuron =>
                 {
-                    var synapse = new Synapse(thisLayerNeuron, nextLayerNeuron);
+                    var synapse = new Synapse(thisLayerNeuron, nextLayerNeuron, p_SynapseWeights?[iSynapse++]);
                     thisLayerNeuron.SynapsesToNextLayer.Add(synapse);
                     nextLayerNeuron.SynapsesToPreviousLayer.Add(synapse);
                 });

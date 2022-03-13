@@ -1,0 +1,12 @@
+NnEngineStorageV1
+MinMaxScalerInput=0;1|0;1
+MinMaxScalerOutput=0;1
+Layer=
+Neurons=in1;0;in2;0;
+SynapsesToPreviousLayer=
+Layer=NnEngine.ActivationFunctionSigmoid
+Neurons=h1;3,448653;h2;-2,5004025;h3;2,6837032;h4;3,3270717;
+SynapsesToPreviousLayer=4,0051928;-4,991237;-6,4380474;-3,9960525;-0,019033033;-0,49024576;-5,7178087;-7,329118;
+Layer=NnEngine.ActivationFunctionSigmoid
+Neurons=xor;0,74310416;
+SynapsesToPreviousLayer=4,9881196;10,386397;-0,35187948;-10,293389;

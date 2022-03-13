@@ -8,20 +8,30 @@ namespace NnEngine
 {
     public class MinMaxScaler
     {
-        private class MinMaxValue
+        public class MinMaxValue
         {
+            public MinMaxValue()
+            {
+            }
+
+            public MinMaxValue(float p_Min, float p_Max)
+            {
+                Min = p_Min;
+                Max = p_Max;
+            }
+
             public float Min { get; set; } = float.MaxValue;
             public float Max { get; set; } = float.MinValue;
 
             public float MaxMinusMin => Max - Min;
         }
-        List<MinMaxValue> _ColumnMinMaxValues = new List<MinMaxValue>();
+        public List<MinMaxValue> ColumnMinMaxValues = new List<MinMaxValue>();
 
         public List<int> ColumnsWithConstValues()
         {
             List<int> result = new List<int>();
-            for(int i= 0; i < _ColumnMinMaxValues.Count; i++)
-                if (_ColumnMinMaxValues[i].MaxMinusMin == 0)
+            for(int i= 0; i < ColumnMinMaxValues.Count; i++)
+                if (ColumnMinMaxValues[i].MaxMinusMin == 0)
                     result.Add(i);
             return result;
         }
@@ -31,11 +41,11 @@ namespace NnEngine
             foreach (var inputItem in input)
                 for (var iColumn = 0; iColumn < inputItem.Count; iColumn++)
                 {
-                    if (_ColumnMinMaxValues.Count < inputItem.Count)
-                        _ColumnMinMaxValues.Add(new MinMaxValue());
+                    if (ColumnMinMaxValues.Count < inputItem.Count)
+                        ColumnMinMaxValues.Add(new MinMaxValue());
 
                     var val = inputItem[iColumn];
-                    var colMinMax = _ColumnMinMaxValues[iColumn];
+                    var colMinMax = ColumnMinMaxValues[iColumn];
                     if (val < colMinMax.Min)
                         colMinMax.Min = val;
                     if (val > colMinMax.Max)
@@ -52,7 +62,7 @@ namespace NnEngine
                 List<float> resultItem = new List<float>(inputItem.Count);
                 for (var iColumn = 0; iColumn < inputItem.Count; iColumn++)
                 {
-                    var colMinMax = _ColumnMinMaxValues[iColumn];
+                    var colMinMax = ColumnMinMaxValues[iColumn];
                     if (colMinMax.MaxMinusMin != 0)
                         resultItem.Add((inputItem[iColumn] - colMinMax.Min)/colMinMax.MaxMinusMin + resultInc);
                 }
@@ -76,7 +86,7 @@ namespace NnEngine
                 List<float> resultItem = new List<float>(inputItem.Count);
                 for (var iColumn = 0; iColumn < inputItem.Count; iColumn++)
                 {
-                    var colMinMax = _ColumnMinMaxValues[iColumn];
+                    var colMinMax = ColumnMinMaxValues[iColumn];
                     resultItem.Add(inputItem[iColumn] * colMinMax.MaxMinusMin + colMinMax.Min + resultInc);
                 }
                 result.Add(resultItem);

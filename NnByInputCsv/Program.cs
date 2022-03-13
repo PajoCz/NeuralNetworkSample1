@@ -18,6 +18,7 @@ namespace NnByInputCsv
         const int epochs = 10000;
         const float learnRate = 2f;
         const float trainEndWithLossPercent = 0.8f;
+        const bool onlyCalculateOnLoadedTrainedModel = false;
 
         //setMyInitValues use only for start sample with 2 hidden neurons
         static bool setMyInitValues = false;    //set non random neurons biases and weights
@@ -35,100 +36,122 @@ namespace NnByInputCsv
 
             //var fn = "Dataset1-xor.csv";
             //var fn = "Dataset1-sample-posun.csv";
-            //var fn = "Dataset1-sample.csv";
-            var fn = "Dataset1-sample-outputVelky.csv";
+            var fn = "Dataset1-sample.csv";
+            //var fn = "Dataset1-sample-outputVelky.csv";
             //var fn = "Dataset1-ukol.csv";
+            var fnWithPath = @"c:\Users\pajo\source\repos\NeuralNetworkSample1\NnByInputCsv\" + fn;
             using FileStream fs =
-                new FileStream(@"c:\Users\pajo\source\repos\NeuralNetworkSample1\NnByInputCsv\" + fn,
-                    FileMode.Open);
+                new FileStream(fnWithPath, FileMode.Open);
             
             var reader = new DatasetReader(fs);
             var data = reader.ReadLinesNumbers();
 
-            //MinMaxScaler
-            MinMaxScaler minMaxScalerInput = new MinMaxScaler();
-            minMaxScalerInput.Fit(data.Item1);
-            var columnsWithConstValues = minMaxScalerInput.ColumnsWithConstValues();
-            MinMaxScaler minMaxScalerOutput = new MinMaxScaler();
-            minMaxScalerOutput.Fit(data.Item2.ConvertAll(i => new List<float>() {i}));
-
-            var afSigmoid = new ActivationFunctionSigmoid();
-            
-            //NN
-            NeuralLayer layerInput = new NeuralLayer(p_IsInputLayer: true);
-            for(int i=0; i<reader._Header.Count; i++)
+            if (!onlyCalculateOnLoadedTrainedModel)
             {
-                var rh = reader._Header[i];
-                if (rh != reader.OutputColumn && !columnsWithConstValues.Contains(i))
-                    layerInput.Neurons.Add(new Neuron(rh, 0));
-            }
+                //MinMaxScaler
+                MinMaxScaler minMaxScalerInput = new MinMaxScaler();
+                minMaxScalerInput.Fit(data.Item1);
+                var columnsWithConstValues = minMaxScalerInput.ColumnsWithConstValues();
+                MinMaxScaler minMaxScalerOutput = new MinMaxScaler();
+                minMaxScalerOutput.Fit(data.Item2.ConvertAll(i => new List<float>() { i }));
 
-            NeuralLayer layerOutput = new NeuralLayer(afSigmoid);
-            layerOutput.Neurons.Add(new Neuron(reader.OutputColumn));
+                var afSigmoid = new ActivationFunctionSigmoid();
 
-            var neuronsInHiddenLayer = (int)(layerInput.Neurons.Count * neuronsInHiddenMultiplyByInput);
-
-            if (neuronsInHiddenLayer == 0)
-            {
-                layerInput.AddNextLayer(layerOutput);
-            }
-            else
-            {
-                NeuralLayer layerHidden = new NeuralLayer(afSigmoid);
-                for(int i = 0; i < neuronsInHiddenLayer; i++)
-                    layerHidden.Neurons.Add(new Neuron($"h{i+1}"));
-                layerInput.AddNextLayer(layerHidden);
-                var neuronsInSecondHiddenLayer = (int)(layerInput.Neurons.Count * neuronsInSecondHiddenLayerMultiplyByInput);
-                if (neuronsInSecondHiddenLayer > 0)
+                //NN
+                NeuralLayer layerInput = new NeuralLayer(p_IsInputLayer: true);
+                for (int i = 0; i < reader._Header.Count; i++)
                 {
-                    NeuralLayer layerSecondHidden = new NeuralLayer(afSigmoid);
-                    for (int i = 0; i < neuronsInSecondHiddenLayer; i++)
-                        layerSecondHidden.Neurons.Add(new Neuron($"H{i}"));
-                    layerHidden.AddNextLayer(layerSecondHidden);
-                    layerSecondHidden.AddNextLayer(layerOutput);
+                    var rh = reader._Header[i];
+                    if (rh != reader.OutputColumn && !columnsWithConstValues.Contains(i))
+                        layerInput.Neurons.Add(new Neuron(rh, 0));
+                }
+
+                NeuralLayer layerOutput = new NeuralLayer(afSigmoid);
+                layerOutput.Neurons.Add(new Neuron(reader.OutputColumn));
+
+                var neuronsInHiddenLayer = (int)(layerInput.Neurons.Count * neuronsInHiddenMultiplyByInput);
+
+                if (neuronsInHiddenLayer == 0)
+                {
+                    layerInput.AddNextLayer(layerOutput);
                 }
                 else
                 {
-                    layerHidden.AddNextLayer(layerOutput);
+                    NeuralLayer layerHidden = new NeuralLayer(afSigmoid);
+                    for (int i = 0; i < neuronsInHiddenLayer; i++)
+                        layerHidden.Neurons.Add(new Neuron($"h{i + 1}"));
+                    layerInput.AddNextLayer(layerHidden);
+                    var neuronsInSecondHiddenLayer =
+                        (int)(layerInput.Neurons.Count * neuronsInSecondHiddenLayerMultiplyByInput);
+                    if (neuronsInSecondHiddenLayer > 0)
+                    {
+                        NeuralLayer layerSecondHidden = new NeuralLayer(afSigmoid);
+                        for (int i = 0; i < neuronsInSecondHiddenLayer; i++)
+                            layerSecondHidden.Neurons.Add(new Neuron($"H{i}"));
+                        layerHidden.AddNextLayer(layerSecondHidden);
+                        layerSecondHidden.AddNextLayer(layerOutput);
+                    }
+                    else
+                    {
+                        layerHidden.AddNextLayer(layerOutput);
+                    }
                 }
-            }
 
-            NeuralNetworkEngine nne = new NeuralNetworkEngine(layerInput);
+                NeuralNetworkEngine nne = new NeuralNetworkEngine(layerInput);
 
-            if (setMyInitValues)
-            {
-                //it works only for start sample with 2 hidden neurons
-                nne.FindNeuronById("h1").InitValues(new List<float>() { 0.8815793758627867f, -0.5202642691344876f }, 0.9888773586480377f);
-                nne.FindNeuronById("h2").InitValues(new List<float>() { -0.0037441705087075737f, 0.2667151772486819f }, 0.32188634502570845f);
-                nne.FindNeuronById("Out").InitValues(new List<float>() { -0.038516025100668934f, 1.0484903515494195f }, -1.1927510125913223f);
-            }
-
-            nne.OnAfterTrainOneItem += NetworkOnOnAfterTrainOneItem;
-
-            //nne.Train(data.Item1, data.Item2, epochs, learnRate, trainEndWithLossPercent);
-            nne.Train(data.Item1, data.Item2, epochs, learnRate, trainEndWithLossPercent, minMaxScalerInput, minMaxScalerOutput);
-
-            if (logLearnProgressToImage)
-            {
-                using (Bitmap imgLearn =
-                       learnProgressToImage.CreateImage(logStepsToImageWidth, logStepsToImageHeight))
+                if (setMyInitValues)
                 {
-                    imgLearn.Save(
-                        $"{logFolder}\\_LearnProgress.png", ImageFormat.Png);
+                    //it works only for start sample with 2 hidden neurons
+                    nne.FindNeuronById("h1").InitValues(new List<float>() { 0.8815793758627867f, -0.5202642691344876f }, 0.9888773586480377f);
+                    nne.FindNeuronById("h2").InitValues(new List<float>() { -0.0037441705087075737f, 0.2667151772486819f }, 0.32188634502570845f);
+                    nne.FindNeuronById("Out").InitValues(new List<float>() { -0.038516025100668934f, 1.0484903515494195f }, -1.1927510125913223f);
                 }
+
+                nne.OnAfterTrainOneItem += NetworkOnOnAfterTrainOneItem;
+
+                //nne.Train(data.Item1, data.Item2, epochs, learnRate, trainEndWithLossPercent);
+                nne.Train(data.Item1, data.Item2, epochs, learnRate, trainEndWithLossPercent, minMaxScalerInput, minMaxScalerOutput);
+
+                using (var nneFile = new FileStream(fnWithPath + ".trained.txt", FileMode.Create))
+                {
+                    new NnEngineStorage().SaveToStream(nne, nneFile);
+                }
+
+                if (logLearnProgressToImage)
+                {
+                    using (Bitmap imgLearn =
+                           learnProgressToImage.CreateImage(logStepsToImageWidth, logStepsToImageHeight))
+                    {
+                        imgLearn.Save(
+                            $"{logFolder}\\_LearnProgress.png", ImageFormat.Png);
+                    }
+                }
+
+                //Test Nn calculation
+                Calculate(reader, data, nne);
             }
 
             //Test Nn calculation
-            Console.WriteLine(string.Join("; ", reader._Header));
-            for(int i=0; i<data.Item1.Count; i++)
+            Console.WriteLine("NeuralNetwork Save/Load from file and then Calculate:");
+            using (var nneFile = new FileStream(fnWithPath + ".trained.txt", FileMode.Open))
             {
-                var actual = nne.Calculate(data.Item1[i])[0];   //only one output neuron at index [0]
+                var nneLoaded = new NnEngineStorage().LoadFromStream(nneFile);
+                Calculate(reader, data, nneLoaded);
+            }
+        }
+
+        private static void Calculate(DatasetReader reader, Tuple<List<List<float>>, List<float>> data, NeuralNetworkEngine nne)
+        {
+            Console.WriteLine(string.Join("; ", reader._Header));
+            for (int i = 0; i < data.Item1.Count; i++)
+            {
+                var actual = nne.Calculate(data.Item1[i])[0]; //only one output neuron at index [0]
                 var expected = data.Item2[i];
                 Console.Write(string.Join("; ", data.Item1[i]));
                 var missed = expected != 0
                     ? Math.Abs((actual / expected - 1f) * 100f)
-                    :actual * 100f;
-                Console.WriteLine($"; Expected={expected}; Calculated={actual}; {missed:f3}% missed" );
+                    : actual * 100f;
+                Console.WriteLine($"; Expected={expected}; Calculated={actual}; {missed:f3}% missed");
             }
         }
 
