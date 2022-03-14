@@ -65,13 +65,13 @@ namespace NnEngine
                 var minMaxScalerOutput = lineValue.Split('|');
 
                 var layer = LoadLayer(sw);
-                var result = new NeuralNetworkEngine(layer.Item1);
+                var result = new NeuralNetworkEngine(layer.Value.layer);
                 while (layer != null)
                 {
-                    var prevLayer = layer.Item1;
+                    var prevLayer = layer.Value.layer;
                     layer = LoadLayer(sw);
                     if (layer != null)
-                        prevLayer.AddNextLayer(layer.Item1, layer.Item2);
+                        prevLayer.AddNextLayer(layer.Value.layer, layer.Value.synapseWeights);
                 }
 
                 result.MinMaxScalerInput = new MinMaxScaler();
@@ -105,7 +105,7 @@ namespace NnEngine
             return true;
         }
 
-        private static Tuple<NeuralLayer, List<float>>? LoadLayer(StreamReader sw)
+        private static (NeuralLayer layer, List<float>? synapseWeights)? LoadLayer(StreamReader sw)
         {
             string? lineValue;
             if (!ReadLine(sw, Key_Layer, out lineValue)) 
@@ -123,7 +123,7 @@ namespace NnEngine
             ReadLine(sw, Key_SynapsesToPreviousLayer, out lineValue);
             var synapseWeights = string.IsNullOrEmpty(lineValue) ? null : lineValue.Trim(';').Split(';').Select(i => float.Parse(i)).ToList();
 
-            return new Tuple<NeuralLayer, List<float>>(layer, synapseWeights);
+            return new (layer, synapseWeights);
         }
     }
 }

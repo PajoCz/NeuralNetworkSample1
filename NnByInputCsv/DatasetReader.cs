@@ -43,7 +43,7 @@ namespace NnByInputCsv
                 yield return line.Split(separator).ToList();
         }
 
-        public Tuple<List<List<float>>, List<float>> ReadLinesNumbers()
+        public (List<List<float>> inputs, List<float> outputs) ReadLinesNumbers()
         {
             string line;
             List<List<float>> inputs = new List<List<float>>();
@@ -64,7 +64,7 @@ namespace NnByInputCsv
                 outputs.Add(outputValue);
             }
 
-            return new Tuple<List<List<float>>, List<float>>(inputs, outputs);
+            return new (inputs, outputs);
         }
     }
 }

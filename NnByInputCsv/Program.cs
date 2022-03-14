@@ -50,10 +50,10 @@ namespace NnByInputCsv
             {
                 //MinMaxScaler
                 MinMaxScaler minMaxScalerInput = new MinMaxScaler();
-                minMaxScalerInput.Fit(data.Item1);
+                minMaxScalerInput.Fit(data.inputs);
                 var columnsWithConstValues = minMaxScalerInput.ColumnsWithConstValues();
                 MinMaxScaler minMaxScalerOutput = new MinMaxScaler();
-                minMaxScalerOutput.Fit(data.Item2.ConvertAll(i => new List<float>() { i }));
+                minMaxScalerOutput.Fit(data.outputs.ConvertAll(i => new List<float>() { i }));
 
                 var afSigmoid = new ActivationFunctionSigmoid();
 
@@ -110,7 +110,7 @@ namespace NnByInputCsv
                 nne.OnAfterTrainOneItem += NetworkOnOnAfterTrainOneItem;
 
                 //nne.Train(data.Item1, data.Item2, epochs, learnRate, trainEndWithLossPercent);
-                nne.Train(data.Item1, data.Item2, epochs, learnRate, trainEndWithLossPercent, minMaxScalerInput, minMaxScalerOutput);
+                nne.Train(data.inputs, data.outputs, epochs, learnRate, trainEndWithLossPercent, minMaxScalerInput, minMaxScalerOutput);
 
                 using (var nneFile = new FileStream(fnWithPath + ".trained.txt", FileMode.Create))
                 {
@@ -140,14 +140,14 @@ namespace NnByInputCsv
             }
         }
 
-        private static void Calculate(DatasetReader reader, Tuple<List<List<float>>, List<float>> data, NeuralNetworkEngine nne)
+        private static void Calculate(DatasetReader reader, (List<List<float>> inputs, List<float> outputs) data, NeuralNetworkEngine nne)
         {
             Console.WriteLine(string.Join("; ", reader._Header));
-            for (int i = 0; i < data.Item1.Count; i++)
+            for (int i = 0; i < data.inputs.Count; i++)
             {
-                var actual = nne.Calculate(data.Item1[i])[0]; //only one output neuron at index [0]
-                var expected = data.Item2[i];
-                Console.Write(string.Join("; ", data.Item1[i]));
+                var actual = nne.Calculate(data.inputs[i])[0]; //only one output neuron at index [0]
+                var expected = data.outputs[i];
+                Console.Write(string.Join("; ", data.outputs[i]));
                 var missed = expected != 0
                     ? Math.Abs((actual / expected - 1f) * 100f)
                     : actual * 100f;
