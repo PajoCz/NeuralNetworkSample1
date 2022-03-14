@@ -21,7 +21,7 @@ namespace NeuralNetworkSample3_Layers
         const double trainEndWithLossPercent = 0.8;
 
         //setMyInitValues use only for start sample with 2 hidden neurons
-        static bool setMyInitValues = false;    //set non random neurons biases and weights
+        static bool setMyInitValues = true;    //set non random neurons biases and weights
 
         //SETTINGS - logging progress
         static string logFolder = "D:\\NeuralNetworkProgress";
@@ -67,7 +67,7 @@ namespace NeuralNetworkSample3_Layers
             {
                 NeuralLayer layerHidden = new NeuralLayer();
                 for(int i = 0; i < neuronsInHiddenLayer; i++)
-                    layerHidden.Neurons.Add(new Neuron($"h{i}"));
+                    layerHidden.Neurons.Add(new Neuron($"h{i+1}"));
                 layerInput.AddNextLayer(layerHidden);
                 //if (neuronsInSecondHiddenLayer > 0)
                 //{
