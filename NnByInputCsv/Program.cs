@@ -11,12 +11,6 @@ namespace NnByInputCsv
 {
     class Program
     {
-        //SETTINGS - neural network
-        const float neuronsInHiddenMultiplyByInput = 2; //0 means no hidden layer
-        const float neuronsInSecondHiddenLayerMultiplyByInput = 0;    //0 means no second hidden layer
-        //static int neuronsInSecondHiddenLayer = 2;    //0 means no hidden layer
-        const int epochs = 10000;
-        const float learnRate = 2f;
         const float trainEndWithLossPercent = 0.8f;
         const bool onlyCalculateOnLoadedTrainedModel = false;
 
@@ -30,15 +24,45 @@ namespace NnByInputCsv
         static int logStepsToImageWidth = 1024;
         static int logStepsToImageHeight = 768;
         static bool logTextFile = false;   //enable/disable text log start/end neurons to log folder
+        
+        
+        //SETTINGS - neural network - change by csv data
+        static IActivationFunction af = new ActivationFunctionSigmoid();
+
+        //--Binary categorization
+        //const string fn = "Dataset1-xor.csv";
+        //const float neuronsInHiddenMultiplyByInput = 1; //0 means no hidden layer
+        //const float neuronsInSecondHiddenLayerMultiplyByInput = 0;    //0 means no second hidden layer
+        //const int epochs = 10000;
+        //const float learnRate = 2f;
+
+        //const string fn = "Dataset1-sample-posun.csv";
+        //const float neuronsInHiddenMultiplyByInput = 1; //0 means no hidden layer
+        //const float neuronsInSecondHiddenLayerMultiplyByInput = 0;    //0 means no second hidden layer
+        //const int epochs = 1000;
+        //const float learnRate = 10f;
+
+        //const string fn = "Dataset1-sample.csv";
+        //const float neuronsInHiddenMultiplyByInput = 1; //0 means no hidden layer
+        //const float neuronsInSecondHiddenLayerMultiplyByInput = 0;    //0 means no second hidden layer
+        //const int epochs = 1000;
+        //const float learnRate = 10f;
+
+        //const string fn = "Dataset1-sample-outputVelky.csv";
+        //const float neuronsInHiddenMultiplyByInput = 1; //0 means no hidden layer
+        //const float neuronsInSecondHiddenLayerMultiplyByInput = 0;    //0 means no second hidden layer
+        //const int epochs = 1000;
+        //const float learnRate = 10f;
+
+        //--Regression
+        const string fn = "Dataset1-ukol.csv";
+        const float neuronsInHiddenMultiplyByInput = 3; //0 means no hidden layer
+        const float neuronsInSecondHiddenLayerMultiplyByInput = 3;    //0 means no second hidden layer
+        const int epochs = 10000;
+        const float learnRate = 6f;
 
         static void Main(string[] args)
         {
-
-            //var fn = "Dataset1-xor.csv";
-            //var fn = "Dataset1-sample-posun.csv";
-            var fn = "Dataset1-sample.csv";
-            //var fn = "Dataset1-sample-outputVelky.csv";
-            //var fn = "Dataset1-ukol.csv";
             var fnWithPath = @"c:\Users\pajo\source\repos\NeuralNetworkSample1\NnByInputCsv\" + fn;
             using FileStream fs =
                 new FileStream(fnWithPath, FileMode.Open);
@@ -55,8 +79,6 @@ namespace NnByInputCsv
                 MinMaxScaler minMaxScalerOutput = new MinMaxScaler();
                 minMaxScalerOutput.Fit(data.outputs.ConvertAll(i => new List<float>() { i }));
 
-                var afSigmoid = new ActivationFunctionSigmoid();
-
                 //NN
                 NeuralLayer layerInput = new NeuralLayer(p_IsInputLayer: true);
                 for (int i = 0; i < reader._Header.Count; i++)
@@ -66,7 +88,7 @@ namespace NnByInputCsv
                         layerInput.Neurons.Add(new Neuron(rh, 0));
                 }
 
-                NeuralLayer layerOutput = new NeuralLayer(afSigmoid);
+                NeuralLayer layerOutput = new NeuralLayer(af);
                 layerOutput.Neurons.Add(new Neuron(reader.OutputColumn));
 
                 var neuronsInHiddenLayer = (int)(layerInput.Neurons.Count * neuronsInHiddenMultiplyByInput);
@@ -77,7 +99,7 @@ namespace NnByInputCsv
                 }
                 else
                 {
-                    NeuralLayer layerHidden = new NeuralLayer(afSigmoid);
+                    NeuralLayer layerHidden = new NeuralLayer(af);
                     for (int i = 0; i < neuronsInHiddenLayer; i++)
                         layerHidden.Neurons.Add(new Neuron($"h{i + 1}"));
                     layerInput.AddNextLayer(layerHidden);
@@ -85,7 +107,7 @@ namespace NnByInputCsv
                         (int)(layerInput.Neurons.Count * neuronsInSecondHiddenLayerMultiplyByInput);
                     if (neuronsInSecondHiddenLayer > 0)
                     {
-                        NeuralLayer layerSecondHidden = new NeuralLayer(afSigmoid);
+                        NeuralLayer layerSecondHidden = new NeuralLayer(af);
                         for (int i = 0; i < neuronsInSecondHiddenLayer; i++)
                             layerSecondHidden.Neurons.Add(new Neuron($"H{i}"));
                         layerHidden.AddNextLayer(layerSecondHidden);
